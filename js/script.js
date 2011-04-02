@@ -127,17 +127,34 @@ function set_instructions(text) {
     $("#instructions").html(text);
 }
 
+var counter = 0
+function next_num() {
+	counter = counter + 1;
+	return counter;
+}
+
 var IMAGE = 0,
     HEATMAP = 1;
 
-var Image = function(div) {
+var Image = function(url) {
     var self = this;
+	this.url = url;
+	this.div_string = "image-" + next_num();
 
-    this.div = $(div);
-    this.position = $(div).offset();
+	$("#pictures").append(""+
+		"<div id='" + this.div_string +"' class='image-wrapper'>" +
+			"<div class='image absolute'><img src='" + url + "'/></div>" +
+			"<canvas id='heatmap' class='image-heatmap absolute'>" +
+			"<div class='clear'></div>" +
+		"</div>"
+	);
+
+    this.div = $("#" + this.div_string);
+    this.position = this.div.offset();
     this.state = IMAGE;
 	this.heatmap_div = this.div.find(".image-heatmap");
 	this.heatmap = heatmapApp.initialize("heatmap", 400, 300);
+	this.next_image = undefined;
 
     this.div.find(".image").click(function(event) {
         var x = event.offsetX;
@@ -149,10 +166,12 @@ var Image = function(div) {
         $.ajax({
             url: "http://127.0.0.1:8124/click",
             dataType: 'json',
-            data: {'x': x, 'y': y},
+            data: {'x': x, 'y': y, image: self.url},
             success: function(json) {
                 self.show_heatmap();
 				self.state = HEATMAP;
+
+				self.generate_next_image();
             },
         });
 
@@ -161,7 +180,7 @@ var Image = function(div) {
     });
 
     this.generate_heatmap = function() {
-        $.getJSON("http://127.0.0.1:8124/clicks", function(points) {
+        $.getJSON("http://127.0.0.1:8124/clicks", {image: self.url}, function(points) {
 			for(var i in points) {
 				var x = points[i].x
 				var y = points[i].y
@@ -176,36 +195,32 @@ var Image = function(div) {
 
     this.generate_next_image = function() {
 		$.getJSON("http://127.0.0.1:8124/random", function(data) {
-			var id = "image-" + data['id'];
-			var href = data['url'];
-			$("#pictures").append(""+
-				"<div id='" + id +"' class='image-wrapper'>" +
-					"<div class='image absolute'><img src='" + url + "'/></div>" +
-					"<canvas id='heatmap' class='image-heatmap absolute'>" +
-				"</div>"
-			);
+			var url = data['url'];
 
-			self.next_image = Image(id);
+			self.next_image = Image(url);
+			self.next_image.hide();
 		});
     };
 
     $("body").click(function(event) {
         if(self.state == HEATMAP) {
 			self.hide();
+			self.next_image.show();
         }
     });
 
 	this.hide = function() {
 		self.div.fadeOut();
+	};
+
+	this.show = function() {
+		self.div.fadeIn();
         set_instructions("CLICK THE PICTURE");
 	};
 }
 
-function new_image() {
-}
-
 $(document).ready(function() {
-    var image = new Image("#image-1");
+    var image = new Image("http://placekitten.com/400/300");
 
 	$("#new-image-submit").click(function(event) {
 		event.preventDefault();

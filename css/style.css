@@ -143,11 +143,11 @@ a:hover { color: #036; }
 }
 
 .image-wrapper {
+	width: 400px;
+	height: 300px;
     position: relative;
     margin-left: auto;
     margin-right: auto;
-    height: 300px;
-    width: 400px;
     border: 1px solid #EEE;
 }
 
@@ -165,7 +165,7 @@ a:hover { color: #036; }
 .image {
     z-index: 9000;
     width: 100%;
-    background-color: green;
+    background-color: white;
     height: 300px;
 }
 
