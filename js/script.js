@@ -136,9 +136,10 @@ var Image = function(div) {
     this.div = $(div);
     this.position = $(div).offset();
     this.state = IMAGE;
+	this.heatmap_div = this.div.find(".image-heatmap");
 	this.heatmap = heatmapApp.initialize("heatmap", 400, 300);
 
-    $(".image").click(function(event) {
+    this.div.find(".image").click(function(event) {
         var x = event.offsetX;
         var y = event.offsetY;
 		heatmapApp.add_point(x, y);
@@ -151,10 +152,12 @@ var Image = function(div) {
             data: {'x': x, 'y': y},
             success: function(json) {
                 self.show_heatmap();
+				self.state = HEATMAP;
             },
         });
 
-        set_instructions("Click anywhere to continue");
+
+        set_instructions("CLICK ANYWHERE");
     });
 
     this.generate_heatmap = function() {
@@ -168,24 +171,49 @@ var Image = function(div) {
     };
 
     this.show_heatmap = function() {
-        $(".image-heatmap").fadeIn();
+        this.div.find(".image-heatmap").fadeIn();
     };
 
-    var next_image = function() {
-        /* $.getJSON("", function(data) {
-            self.generate_heatmap();
-        }); */
+    this.generate_next_image = function() {
+		$.getJSON("http://127.0.0.1:8124/random", function(data) {
+			var id = "image-" + data['id'];
+			var href = data['url'];
+			$("#pictures").append(""+
+				"<div id='" + id +"' class='image-wrapper'>" +
+					"<div class='image absolute'><img src='" + url + "'/></div>" +
+					"<canvas id='heatmap' class='image-heatmap absolute'>" +
+				"</div>"
+			);
+
+			self.next_image = Image(id);
+		});
     };
 
     $("body").click(function(event) {
         if(self.state == HEATMAP) {
-
+			self.hide();
         }
     });
+
+	this.hide = function() {
+		self.div.fadeOut();
+        set_instructions("CLICK THE PICTURE");
+	};
+}
+
+function new_image() {
 }
 
 $(document).ready(function() {
-    var image = new Image(".image");
+    var image = new Image("#image-1");
+
+	$("#new-image-submit").click(function(event) {
+		event.preventDefault();
+		var url = $("#new-image-url").val();
+
+		$.get("http://127.0.0.1:8124/new", {"url": url}, function() {
+		});
+	});
 });
 
 

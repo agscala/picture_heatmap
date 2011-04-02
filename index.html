@@ -57,15 +57,21 @@
     s.parentNode.insertBefore(g,s)}(document,"script"));
   </script> -->
 
-  <h1>Pic the Best</h1>
+  <div id="pictures">
 
-  <div class="image-wrapper">
-	  <div class="image absolute"><img src="http://placekitten.com/400/300"/></div>
-	  <canvas id="heatmap" class="image-heatmap absolute"></div>
+	  <div id="image-1" class="image-wrapper">
+		  <div class="image absolute"><img src="http://placekitten.com/400/300"/></div>
+		  <canvas id="heatmap" class="image-heatmap absolute"></div>
+	  </div>
+	  <div class="clear"></div>
   </div>
-  <div class="clear"></div>
 
-  <p id="instructions"></p>
+  <p id="instructions">CLICK THE PICTURE</p>
+
+  <form>
+	  <input id="new-image-url">
+	  <input id="new-image-submit" type="submit" value="submit"/>
+  </form>
 
 
 </body>

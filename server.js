@@ -45,37 +45,50 @@ var Dispatcher = function() {
 
 var dispatcher = new Dispatcher();
 
-dispatcher.GET('/test', function(req, res) {
-    res.writeHead(200, {'Content-Type': 'text/plain'});
-    res.end('Hello World\n');
+dispatcher.GET('/new', function(req, res) {
+	image_url = req.query.url;
+	console.log("SAVING: " + image_url);
+	client.sadd("images", image_url);
+
+    res.writeHead(200, {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'});
+	res.write(JSON.stringify({"success": 1}));
+	res.end('Hello World\n');
+});
+
+dispatcher.GET('/random', function(req, res) {
+	client.srandmember('images', function(err, image_url) {
+    res.writeHead(200, {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'});
+		res.write(JSON.stringify({"success": 1, "url": image_url}));
+		res.end();
+	});
 });
 
 dispatcher.GET('/click', function(req, res) {
     console.log("X: ", req.query.x)
     console.log("Y: ", req.query.y)
-    data = {
+
+	image = req.query.image;
+    point = {
         'x' : req.query.x,
         'y' : req.query.y,
     };
 
-    client.rpush('points', JSON.stringify(data), redis.print);
+    client.rpush(image + '.points', JSON.stringify(point), redis.print);
 
     res.writeHead(200, {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'});
-
-    res.write(JSON.stringify({'a': 1}));
+    res.write(JSON.stringify({"success": 1}));
     res.end();
 });
 
 dispatcher.GET('/clicks', function(req, res) {
-    console.log("X: ", req.query.x)
-    console.log("Y: ", req.query.y)
+	var image = req.query.image || "image-1";
     data = {
         'x' : req.query.x,
         'y' : req.query.y,
     };
 
     var points = [];
-    client.lrange('points', "0", "-1", function(err, replies) {
+    client.lrange(image + '.points', "0", "-1", function(err, replies) {
         replies.forEach(function(reply, i) {
             points.push(JSON.parse(reply));
             console.log(reply);
