@@ -134,28 +134,33 @@ a:hover { color: #036; }
   h2, h3{ page-break-after: avoid; }
 }
 
+body {
+	background-color: black;
+}
+
 .absolute {
     position: absolute;
 }
 
 .clear {
     clear: both;
+	display: none;
 }
 
-#images {
+#pictures {
 	position: relative;
+    margin-left: auto;
+    margin-right: auto;
+	width: 960px; height: 400px;
+	text-align: center;
 }
 
 .image-wrapper {
-	position: absolute;
-	top: 5em;
-	width: 400px;
-	height: 300px;
-    position: relative;
+	border: 10px solid #EEE;
+	display: none;
     margin-left: auto;
     margin-right: auto;
-    border: 1px solid #EEE;
-	display: none;
+	background-color: white;
 }
 
 .image-overlay {
@@ -164,20 +169,33 @@ a:hover { color: #036; }
 
 .image-heatmap {
     z-index: 9100;
-    width: 100%;
-    height: 300px;
     display: none;
 }
 
 .image {
     z-index: 9000;
-    width: 100%;
-    background-color: white;
-    height: 300px;
 }
 
 #instructions {
-    font-size: 20px;
+    font-size: 30px;
     font-weight: bold;
+	color: white;
+	text-align: center;
+	margin-top: 2em;
+}
+
+#new-image-wrapper {
+	margin-top: 2em;
+	margin-left: auto;
+	margin-right: auto;
+	text-align: center;
+}
+
+#new-image-wrapper p {
+	color: white;
+}
+
+#new-image-url {
+	width: 50em;
 }
 

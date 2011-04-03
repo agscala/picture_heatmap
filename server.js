@@ -6,19 +6,25 @@ var redis = require('redis'),
     client = redis.createClient();
 
 function is_image_url(url, callbacks) {
-	request({uri: url}, function(error, response, body) {
-		var content_type = response.headers['content-type'];
-		var is_image = (content_type.indexOf("image") != -1);
+	try {
+		request({uri: url}, function(error, response, body) {
+			var content_type = response.headers['content-type'];
+			var is_image = (content_type.indexOf("image") != -1);
 
-		if(is_image ) {
-			if(callbacks !== undefined && callbacks['success'] !== undefined)
-				callbacks.success();
-		}
-		else {
-			if(callbacks !== undefined && callbacks['failure'] !== undefined)
-				callbacks.failure();
-		}
-	});
+			if(is_image ) {
+				if(callbacks !== undefined && callbacks['success'] !== undefined)
+					callbacks.success();
+			}
+			else {
+				if(callbacks !== undefined && callbacks['failure'] !== undefined)
+					callbacks.failure();
+			}
+		});
+	}
+	catch(error) {
+		if(callbacks !== undefined && callbacks['failure'] !== undefined)
+			callbacks.failure();
+	}
 }
 
 is_image_url("http://www.google.com/images/nav_logo40.png");
@@ -119,7 +125,6 @@ dispatcher.GET('/clicks', function(req, res) {
 		var points = [];
         replies.forEach(function(reply, i) {
             points.push(JSON.parse(reply));
-            console.log(reply);
         });
 
         res.writeHead(200, {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'});
