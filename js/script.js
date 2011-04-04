@@ -212,6 +212,7 @@ var ClickableImage = function(url, show_when_loaded) {
         set_instructions("CLICK THE PICTURE");
 
 		$("#pictures").css('height', this.height);
+		$("#pictures").css('width', this.width);
 
 		if(callback) {
 			callback();
@@ -270,11 +271,11 @@ $(document).ready(function() {
 		$.getJSON("http://98.243.200.115:8000/new", {"url": url}, function(data) {
 			if(data['success']) {
 				alert("Thanks, Looks good");
-				var url = $("#new-image-url").clear();
 			}
 			else {
 				alert("Sorry, we can't processes that url");
 			}
+			var url = $("#new-image-url").val("");
 		});
 	});
 });
