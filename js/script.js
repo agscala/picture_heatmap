@@ -82,7 +82,6 @@ var Heatmap = function(canvas_id, width, height) {
 
 	this.add_point = function(x, y) {
 		if(typeof(x)=='undefined') {
-			console.log("THERE WAS A PROBLEM");
 			return;
 		}
 
@@ -107,6 +106,11 @@ var Heatmap = function(canvas_id, width, height) {
 	this.getData = function(){
 		return this.canvas.toDataURL();
 	}
+
+	this.set_dimensions = function(width, height) {
+		this.canvas.width = width;
+		this.canvas.height = height;
+	}
 };
 
 function set_instructions(text) {
@@ -120,12 +124,13 @@ function next_num() {
 }
 
 
-var Image = function(url) {
+var ClickableImage = function(url, show_when_loaded) {
     var self = this;
 	this.url = url;
 
-	var div_string = "image-" + next_num();
-	var heatmap_div_string = "heatmap-" + next_num();
+	var id = next_num();
+	var div_string = "image-" + id;
+	var heatmap_div_string = "heatmap-" + id;
 
 	$("#pictures").append(""+
 		"<div id='" + div_string +"' class='image-wrapper'>" +
@@ -138,48 +143,57 @@ var Image = function(url) {
     this.div = $("#" + div_string);
     this.state = IMAGE;
 
-	this.width = this.div.find("img").attr('width');
-	this.height = this.div.find("img").attr('height');
+	// this.width = this.div.find("img").attr('width');
+	// this.height = this.div.find("img").attr('height');
 
-	this.div.css('width', this.width);
-	this.div.css('height', this.height);
+	var image = new Image();
+	image.src = url;
+	image.onload = function() {
+		self.width = this.width;
+		self.height = this.height;
+		self.div.css('width', this.width);
+		self.div.css('height', this.height);
+		// self.heatmap.set_dimensions(this.width, this.height);
+		self.heatmap = new Heatmap(heatmap_div_string, this.width, this.height);
 
-	this.heatmap = new Heatmap(heatmap_div_string, this.width, this.height);
+		// Generate the heatmap
+		(function() {
+			$.getJSON("http://98.243.200.115:8000/clicks", {image: self.url}, function(points) {
+				for(var i in points) {
+					if(!points[i]) {
+						continue;
+					}
+					var x = points[i].x;
+					var y = points[i].y;
+					self.heatmap.add_point(x, y);
+				}
+			});
+		})();
+	}
 
-    this.div.find(".image").click(function(event) {
-        var x = event.offsetX;
-        var y = event.offsetY;
+
+    this.div.find("img").click(function(event) {
+        var x = event.offsetX || event.layerX;
+        var y = event.offsetY || event.layerY;
 
 		self.heatmap.add_point(x, y);
-		self.generate_heatmap();
 
         $.ajax({
-            url: "http://127.0.0.1:8124/click",
+            url: "http://98.243.200.115:8000/click",
             dataType: 'json',
             data: {'x': x, 'y': y, image: self.url},
             success: function(json) {
-                self.show_heatmap();
 				self.state = HEATMAP;
-
+				self.show_heatmap();
+				set_instructions("CLICK THE PICTURE AGAIN");
             },
         });
-
-
-        set_instructions("CLICK THE PICTURE AGAIN");
     });
 
-    this.generate_heatmap = function() {
-        $.getJSON("http://127.0.0.1:8124/clicks", {image: self.url}, function(points) {
-			for(var i in points) {
-				var x = points[i].x
-				var y = points[i].y
-				self.heatmap.add_point(x, y);
-			}
-        });
-    };
 
     this.show_heatmap = function() {
         this.div.find(".image-heatmap").fadeIn();
+        this.div.find(".image-heatmap").css({'display': 'block'});
     };
 
 
@@ -197,6 +211,8 @@ var Image = function(url) {
 		self.div.fadeIn(200);
         set_instructions("CLICK THE PICTURE");
 
+		$("#pictures").css('height', this.height);
+
 		if(callback) {
 			callback();
 		}
@@ -206,24 +222,24 @@ var Image = function(url) {
 var IMAGE = 0,
     HEATMAP = 1;
 
-var ImageManager = (function() {
+var ClickableImageManager = (function() {
 	var self = this;
 	var current_image, next_image;
 
 	var get_next_image = function() {
-		$.getJSON("http://127.0.0.1:8124/random", function(data) {
+		$.getJSON("http://98.243.200.115:8000/random", function(data) {
 			var url = data['url'];
 
-			next_image = new Image(url);
+			next_image = new ClickableImage(url);
 			next_image.disappear();
 		});
 	};
 
 	var initialize = function() {
-		$.getJSON("http://127.0.0.1:8124/random", function(data) {
+		$.getJSON("http://98.243.200.115:8000/random", function(data) {
 			var url = data['url'];
 
-			current_image = new Image(url);
+			current_image = new ClickableImage(url);
 			current_image.reveal();
 			get_next_image();
 		});
@@ -245,13 +261,13 @@ var ImageManager = (function() {
 })();
 
 $(document).ready(function() {
-	ImageManager.initialize();
+	ClickableImageManager.initialize();
 
 	$("#new-image-submit").click(function(event) {
 		event.preventDefault();
 		var url = $("#new-image-url").val();
 
-		$.getJSON("http://127.0.0.1:8124/new", {"url": url}, function(data) {
+		$.getJSON("http://98.243.200.115:8000/new", {"url": url}, function(data) {
 			if(data['success']) {
 				alert("Thanks, Looks good");
 				var url = $("#new-image-url").clear();

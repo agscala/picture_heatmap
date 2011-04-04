@@ -136,7 +136,7 @@ dispatcher.GET('/clicks', function(req, res) {
 
 http.createServer(function (req, res) {
     dispatcher.route(req, res);
-}).listen(8124, "127.0.0.1");
+}).listen(8000);
 
-console.log('Server running at http://127.0.0.1:8124/');
+console.log('Server running at http://127.0.0.1:8000/');
 

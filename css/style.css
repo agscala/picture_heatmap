@@ -161,6 +161,7 @@ body {
     margin-left: auto;
     margin-right: auto;
 	background-color: white;
+	width: 500px;
 }
 
 .image-overlay {
@@ -170,6 +171,7 @@ body {
 .image-heatmap {
     z-index: 9100;
     display: none;
+	position: absolute;
 }
 
 .image {
@@ -198,4 +200,12 @@ body {
 #new-image-url {
 	width: 50em;
 }
+
+#footer {
+	text-align: center;
+	color: white;
+	margin-top: 2em;
+	margin-bottom: 2em;
+}
+
 
